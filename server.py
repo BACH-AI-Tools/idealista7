@@ -13,8 +13,8 @@ from pathlib import Path
 from fastmcp import FastMCP
 
 # 服务器版本和配置
-__version__ = "2.0.0"
-__tag__ = "idealista7/2.0.0"
+__version__ = "2.0.1"
+__tag__ = "idealista7/2.0.1"
 
 # API 配置
 API_KEY = os.getenv("API_KEY", "")

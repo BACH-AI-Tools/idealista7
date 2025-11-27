@@ -13,8 +13,8 @@ from pathlib import Path
 from fastmcp import FastMCP
 
 # 服务器版本和配置
-__version__ = "2.0.1"
-__tag__ = "idealista7/2.0.1"
+__version__ = "2.0.2"
+__tag__ = "idealista7/2.0.2"
 
 # API 配置
 API_KEY = os.getenv("API_KEY", "")
@@ -26,9 +26,36 @@ TRANSPORT = "stdio"
 # 从文件加载 OpenAPI 规范
 def load_openapi_spec():
     """从 openapi.json 文件加载 OpenAPI 规范"""
-    openapi_path = Path(__file__).parent / "openapi.json"
-    with open(openapi_path, "r", encoding="utf-8") as f:
-        return json.load(f)
+    # 尝试多个可能的位置
+    possible_paths = [
+        Path(__file__).parent / "openapi.json",  # 同目录
+        Path(__file__).parent.parent / "openapi.json",  # 上级目录
+        Path(__file__).resolve().parent / "openapi.json",  # 绝对路径同目录
+    ]
+    
+    for openapi_path in possible_paths:
+        if openapi_path.exists():
+            with open(openapi_path, "r", encoding="utf-8") as f:
+                return json.load(f)
+    
+    # 尝试使用 importlib.resources (Python 3.9+)
+    try:
+        import importlib.resources as pkg_resources
+        # 尝试从包中读取
+        try:
+            files = pkg_resources.files(__package__ or __name__.rsplit('.', 1)[0] if '.' in __name__ else '')
+            openapi_file = files.joinpath("openapi.json")
+            if hasattr(openapi_file, 'read_text'):
+                return json.loads(openapi_file.read_text(encoding='utf-8'))
+        except (TypeError, FileNotFoundError, AttributeError):
+            pass
+    except ImportError:
+        pass
+    
+    # 如果都找不到，抛出详细错误
+    raise FileNotFoundError(
+        f"无法找到 openapi.json 文件。已尝试的路径: {[str(p) for p in possible_paths]}"
+    )
 
 
 # 创建 HTTP 客户端

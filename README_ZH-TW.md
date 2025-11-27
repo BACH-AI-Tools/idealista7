@@ -2,6 +2,10 @@
 
 [English](./README_EN.md) | [简体中文](./README.md) | 繁體中文
 
+[![MCP Badge](https://lobehub.com/badge/mcp-full/bachstudio-bach-idealista7)](https://lobehub.com/zh/mcp/bachstudio-bach-idealista7)
+
+用於存取 Idealista（西班牙最大房產網站）API 的 MCP 伺服器。支援搜尋房屋、公寓、車庫、商業地產、辦公室等多種房產類型。
+
 ## 🚀 使用 EMCP 平台快速體驗
 
 **[EMCP](https://sit-emcp.kaleido.guru)** 是一個強大的 MCP 伺服器管理平台，讓您無需手動配置即可快速使用各種 MCP 伺服器！
@@ -30,52 +34,49 @@
 
 ## 簡介
 
-這是一個使用 [FastMCP](https://fastmcp.wiki) 自動生成的 MCP 伺服器，用於存取 Idealista7 API。
+這是一個 MCP 伺服器，用於存取 Idealista7 API，提供西班牙、葡萄牙、義大利的房產搜尋功能。
 
 - **PyPI 套件名**: `bach-idealista7`
-- **版本**: 1.0.0
+- **版本**: 2.0.0
 - **傳輸協定**: stdio
 
 
-## 安装
+## 安裝
 
-### 从 PyPI 安装:
+### 從 PyPI 安裝:
 
 ```bash
 pip install bach-idealista7
 ```
 
-### 从源码安装:
+### 從原始碼安裝:
 
 ```bash
 pip install -e .
 ```
 
-## 运行
+## 執行
 
-### 方式 1: 使用 uvx（推荐，无需安装）
+### 方式 1: 使用 uvx（推薦，無需安裝）
 
 ```bash
-# 运行（uvx 会自动安装并运行）
+# 設定環境變數
+export API_KEY="your_api_key_here"
+
+# 執行（uvx 會自動安裝並執行）
 uvx --from bach-idealista7 bach_idealista7
-
-# 或指定版本
-uvx --from bach-idealista7@latest bach_idealista7
 ```
 
-### 方式 2: 直接运行（开发模式）
+### 方式 2: 安裝後作為命令執行
 
 ```bash
-python server.py
-```
-
-### 方式 3: 安装后作为命令运行
-
-```bash
-# 安装
+# 安裝
 pip install bach-idealista7
 
-# 运行（命令名使用下划线）
+# 設定環境變數
+export API_KEY="your_api_key_here"
+
+# 執行（命令名使用底線）
 bach_idealista7
 ```
 
@@ -83,7 +84,7 @@ bach_idealista7
 
 ### API 認證
 
-此 API 需要認證。請設定環境變數:
+此 API 需要 RapidAPI 金鑰認證。請在 [RapidAPI](https://rapidapi.com/scraperium/api/idealista7) 取得 API 金鑰後設定環境變數:
 
 ```bash
 export API_KEY="your_api_key_here"
@@ -93,22 +94,21 @@ export API_KEY="your_api_key_here"
 
 | 變數名 | 說明 | 必需 |
 |--------|------|------|
-| `API_KEY` | API 金鑰 | 是 |
+| `API_KEY` | RapidAPI 金鑰 | 是 |
 
 
 
 
-### 在 Claude Desktop 中使用
+### 在 Cursor 中使用
 
-编辑 Claude Desktop 配置文件 `claude_desktop_config.json`:
-
+編輯 Cursor MCP 配置檔案 `~/.cursor/mcp.json`:
 
 ```json
 {
   "mcpServers": {
-    "idealista7": {
-      "command": "python",
-      "args": ["E:\path\to\idealista7\server.py"],
+    "bach-idealista7": {
+      "command": "uvx",
+      "args": ["--from", "bach-idealista7", "bach_idealista7"],
       "env": {
         "API_KEY": "your_api_key_here"
       }
@@ -117,749 +117,190 @@ export API_KEY="your_api_key_here"
 }
 ```
 
-**注意**: 請將 `E:\path\to\idealista7\server.py` 替換為實際的伺服器檔案路徑。
+### 在 Claude Desktop 中使用
+
+編輯 Claude Desktop 配置檔案 `claude_desktop_config.json`:
+
+```json
+{
+  "mcpServers": {
+    "bach-idealista7": {
+      "command": "uvx",
+      "args": ["--from", "bach-idealista7", "bach_idealista7"],
+      "env": {
+        "API_KEY": "your_api_key_here"
+      }
+    }
+  }
+}
+```
 
 
 ## 可用工具
 
-此服务器提供以下工具:
+此伺服器提供以下 15 個工具:
 
 
 ### `list_home_properties`
 
-List home properties with the requested parameters. Buy/Rent \u003e Homes. Filters are optional parameters, please make sure the request follows the rules in each parameter.  Boolean parameters should be true always if you want to use them. To make them false, don't include them in the requests (leave blank).
+搜尋房屋/公寓列表。支援買賣/租賃，可按價格、面積、臥室數量、設施等多種條件篩選。
 
-**端点**: `GET /listhomes`
+**端點**: `GET /listhomes`
 
+**主要參數**:
 
-**参数**:
-
-- `order` (string) *必需*: Order by one of the followings: relevance|lowestprice|highestprice|mostrecent|leastrecent|highestpricereduction|lowestpricem2|highestpricem2|biggest|smallest|highestfloors|lowestfloors Default is relevance.
-
-- `operation` (string) *必需*: Search sales or rentals. Pick between: sale|rent
-
-- `locationId` (string) *必需*: Example value: 0-EU-ES-28-07-001-079
-
-- `locationName` (string) *必需*: Example value: Madrid
-
-- `numPage` (string) *必需*: Example value: 1
-
-- `maxItems` (string) *必需*: Number of items to return. Set 0 to return the item's count, fast response. Max Value is 40, anything above will be ignored.
-
-- `location` (string) *必需*: One of the following values: es|pt|it
-
-- `locale` (string) *必需*: The language of the ads. Pick between: es|it|pt|en|ca|de|fr|nl|nb
-
-- `micrositeShortName` (string): Get ads from a specific real estate. For example if the URL from the real estate is: https://www.idealista.com/pro/cajal-gestion-inmobiliaria/ The parameter micrositeShortName should be cajal-gestion-inmobiliaria
-
-- `minPrice` (string): Minimum price to search.
-
-- `maxPrice` (string): Maximum price to search.
-
-- `minSize` (string): Minimum size to search in m2.
-
-- `maxSize` (string): Maximum size to search in m2.
-
-- `flat` (string): Example value: 
-
-- `onlyFlats` (string): Example value: 
-
-- `penthouse` (string): Example value: 
-
-- `duplex` (string): Example value: 
-
-- `chalet` (string): Example value: 
-
-- `independantHouse` (string): Example value: 
-
-- `semidetachedHouse` (string): Example value: 
-
-- `terracedHouse` (string): Example value: 
-
-- `countryHouse` (string): Example value: 
-
-- `apartamentoType` (string): Example value: 
-
-- `villaType` (string): Example value: 
-
-- `loftType` (string): Example value: 
-
-- `cortijoType` (string): Example value: 
-
-- `atticStudioType` (string): Example value: 
-
-- `casaBajaType` (string): Example value: 
-
-- `bedrooms0` (string): Example value: 
-
-- `bedrooms1` (string): Example value: 
-
-- `bedrooms2` (string): Example value: 
-
-- `bedrooms3` (string): Example value: 
-
-- `bedrooms4` (string): Example value: 
-
-- `bathrooms1` (string): Example value: 
-
-- `bathrooms2` (string): Example value: 
-
-- `bathroom3` (string): Example value: 
-
-- `newDevelopment` (string): Example value: 
-
-- `good` (string): Example value: 
-
-- `renew` (string): Example value: 
-
-- `furnished` (string): Furnishings parameter. ONLY valid when operation=rent. Pick between. Indifferent: leave blank (default) | Furnished: furnished | Only furnished kitchens: furnishedKitchen
-
-- `petsAllowed` (string): Example value: 
-
-- `airConditioning` (string): Example value: 
-
-- `builtinWardrobes` (string): Example value: 
-
-- `elevator` (string): Example value: 
-
-- `exterior` (string): Example value: 
-
-- `garage` (string): Example value: 
-
-- `garden` (string): Example value: 
-
-- `swimmingPool` (string): Example value: 
-
-- `terrance` (string): Example value: 
-
-- `storeRoom` (string): Example value: 
-
-- `accessible` (string): Example value: 
-
-- `luxury` (string): Example value: 
-
-- `hasPlan` (string): Example value: 
-
-- `virtualTour` (string): Example value: 
-
-- `bankOffer` (string): Example value: 
-
-- `topFloor` (string): Example value: 
-
-- `intermediateFloor` (string): Example value: 
-
-- `sinceDate` (string): Publication Date Parameter. One of the following values. Indifferent: leave blank (by default) | Last 24h: T (Rent operation only) | Last 48h: Y (Buy operation only) | Last week: W | Last month: M
-
-- `longTermResidential` (string): Example value: 
-
-- `shortTerm` (string): Example value: 
-
-- `isBareOwnership` (string): Example value: 
-
-- `isTenanted` (string): Example value: 
-
-- `isIllegallyOccupied` (string): Example value: 
-
-- `isFree` (string): Example value: 
-
-
+- `order` (string) *必需*: 排序方式: relevance|lowestprice|highestprice|mostrecent 等
+- `operation` (string) *必需*: 操作類型: sale|rent
+- `locationId` (string) *必需*: 位置 ID，如: 0-EU-ES-28-07-001-079
+- `locationName` (string) *必需*: 位置名稱，如: Madrid
+- `location` (string) *必需*: 國家代碼: es|pt|it
+- `locale` (string) *必需*: 語言: es|it|pt|en|ca|de|fr|nl|nb
 
 ---
 
 
 ### `list_storage_rooms`
 
-List Storage Rooms
+搜尋儲藏室列表。
 
-**端点**: `GET /liststoragerooms`
-
-
-**参数**:
-
-- `order` (string) *必需*: Example value: 
-
-- `operation` (string) *必需*: Example value: 
-
-- `locationId` (string) *必需*: Example value: 0-EU-ES-28-07-001-079
-
-- `locationName` (string) *必需*: Example value: Madrid
-
-- `numPage` (string) *必需*: Example value: 1
-
-- `maxItems` (string) *必需*: Example value: 
-
-- `location` (string) *必需*: Example value: 
-
-- `locale` (string) *必需*: Example value: 
-
-- `micrositeShortName` (string): Example value: 
-
-- `minPrice` (string): Example value: 
-
-- `maxPrice` (string): Example value: 
-
-- `minSize` (string): Example value: 
-
-- `maxSize` (string): Example value: 
-
-- `sinceDate` (string): Publication Date Parameter. One of the following values. Indifferent: leave blank (by default) | Last 24h: T (Rent operation only) | Last 48h: Y (Buy operation only) | Last week: W | Last month: M
-
-
+**端點**: `GET /liststoragerooms`
 
 ---
 
 
 ### `list_buildings`
 
-List Buildings
+搜尋建築物列表。
 
-**端点**: `GET /listbuildings`
-
-
-**参数**:
-
-- `order` (string) *必需*: Example value: 
-
-- `operation` (string) *必需*: Example value: 
-
-- `locationId` (string) *必需*: Example value: 0-EU-ES-28-07-001-079
-
-- `locationName` (string) *必需*: Example value: Madrid
-
-- `numPage` (string) *必需*: Example value: 1
-
-- `maxItems` (string) *必需*: Example value: 
-
-- `location` (string) *必需*: Example value: 
-
-- `locale` (string) *必需*: Example value: 
-
-- `micrositeShortName` (string): Example value: 
-
-- `minPrice` (string): Example value: 
-
-- `maxPrice` (string): Example value: 
-
-- `minSize` (string): Example value: 
-
-- `maxSize` (string): Example value: 
-
-- `sinceDate` (string): Publication Date Parameter. One of the following values. Indifferent: leave blank (by default) | Last 24h: T (Rent operation only) | Last 48h: Y (Buy operation only) | Last week: W | Last month: M
-
-
+**端點**: `GET /listbuildings`
 
 ---
 
 
 ### `list_lands`
 
-List Lands
+搜尋土地列表。支援城市用地、建築用地、非建築用地篩選。
 
-**端点**: `GET /listlands`
-
-
-**参数**:
-
-- `order` (string) *必需*: Example value: 
-
-- `operation` (string) *必需*: Example value: 
-
-- `locationId` (string) *必需*: Example value: 0-EU-ES-28-07-001-079
-
-- `locationName` (string) *必需*: Example value: Madrid
-
-- `numPage` (string) *必需*: Example value: 1
-
-- `maxItems` (string) *必需*: Example value: 
-
-- `location` (string) *必需*: Example value: 
-
-- `locale` (string) *必需*: Example value: 
-
-- `micrositeShortName` (string): Example value: 
-
-- `minPrice` (string): Example value: 
-
-- `maxPrice` (string): Example value: 
-
-- `minSize` (string): Example value: 
-
-- `maxSize` (string): Example value: 
-
-- `urban` (string): Example value: 
-
-- `buildingLand` (string): Example value: 
-
-- `nonBuildingLand` (string): Example value: 
-
-- `sinceDate` (string): Publication Date Parameter. One of the following values. Indifferent: leave blank (by default) | Last 24h: T (Rent operation only) | Last 48h: Y (Buy operation only) | Last week: W | Last month: M
-
-
+**端點**: `GET /listlands`
 
 ---
 
 
 ### `property_details`
 
-Get more details about a property.
+取得房產詳細資訊。
 
-**端点**: `GET /propertydetails`
+**端點**: `GET /propertydetails`
 
+**參數**:
 
-**参数**:
-
-- `propertyId` (string) *必需*: Property Id.
-
-- `location` (string) *必需*: One of the following values: es|pt|it
-
-- `language` (string) *必需*: The language of the ad. Pick between: en, es, it, pt, ca, de, fr, nl, nb
-
-
+- `propertyId` (string) *必需*: 房產 ID
+- `location` (string) *必需*: 國家代碼: es|pt|it
+- `language` (string) *必需*: 語言: en, es, it, pt, ca, de, fr, nl, nb
 
 ---
 
 
 ### `list_garages`
 
-List garages
+搜尋車庫/停車位列表。
 
-**端点**: `GET /listgarages`
-
-
-**参数**:
-
-- `order` (string) *必需*: Order by one of the followings: relevance|lowestprice|highestprice|mostrecent|leastrecent|highestpricereduction|lowestpricem2|highestpricem2|biggest|smallest|highestfloors|lowestfloors Default is relevance.
-
-- `operation` (string) *必需*: Example value: 
-
-- `locationId` (string) *必需*: Example value: 0-EU-ES-28-07-001-079
-
-- `locationName` (string) *必需*: Example value: Madrid
-
-- `numPage` (string) *必需*: Example value: 1
-
-- `maxItems` (string) *必需*: Example value: 
-
-- `location` (string) *必需*: Example value: 
-
-- `locale` (string) *必需*: Example value: 
-
-- `micrositeShortName` (string): Get ads from a specific real estate. For example if the URL from the real estate is: https://www.idealista.com/pro/cajal-gestion-inmobiliaria/ The parameter micrositeShortName should be cajal-gestion-inmobiliaria
-
-- `minPrice` (string): Example value: 
-
-- `maxPrice` (string): Example value: 
-
-- `minSize` (string): Example value: 
-
-- `maxSize` (string): Example value: 
-
-- `motorcycleParking` (string): Example value: 
-
-- `automaticDoor` (string): Example value: 
-
-- `security` (string): Example value: 
-
-- `sinceDate` (string): Publication Date Parameter. One of the following values. Indifferent: leave blank (by default) | Last 24h: T (Rent operation only) | Last 48h: Y (Buy operation only) | Last week: W | Last month: M
-
-
+**端點**: `GET /listgarages`
 
 ---
 
 
 ### `get_sublocations`
 
-Get sublocations inside another location.
+取得某個位置下的子位置列表。
 
-**端点**: `GET /getlocations`
-
-
-**参数**:
-
-- `locationId` (string) *必需*: Location Id that has the flag divisible=true.
-
-- `location` (string) *必需*: One of the following values: es|pt|it
-
-- `propertyType` (string) *必需*: Changes the 'total' field which indicates the number of properties of this type. Note: bedrooms only works with rent operation.
-
-- `operation` (string) *必需*: Changes the 'total' field which indicates the number of properties with this operation.
-
-
+**端點**: `GET /getlocations`
 
 ---
 
 
 ### `get_microsite_profile`
 
-Get Microsite profile information
+取得房產仲介的個人資料資訊。
 
-**端点**: `GET /getmicrositeprofile`
-
-
-**参数**:
-
-- `micrositeShortName` (string) *必需*: Microsite ShortName is the identifier of every real estate profile. You may find it in the URL: idealista.com/pro/sierra-blanca-estates-realty/
-
-- `location` (string) *必需*: Example value: 
-
-
+**端點**: `GET /getmicrositeprofile`
 
 ---
 
 
 ### `get_microsite_locations`
 
-Get the locations where the microsite/profile has properties.
+取得房產仲介有房源的位置列表。
 
-**端点**: `GET /getmicrositelocations`
-
-
-**参数**:
-
-- `micrositeShortName` (string) *必需*: Example value: sumainmobiliaria
-
-- `location` (string) *必需*: One of the following values: es|pt|it
-
-- `locale` (string) *必需*: Language: es|it|pt|en|ca|de|fr|nl|nb
-
-- `operation` (string) *必需*: Example value: sale
-
-- `locationId` (string) *必需*: Example value: 0-EU-ES-28
-
-
+**端點**: `GET /getmicrositelocations`
 
 ---
 
 
 ### `list_commercial_properties`
 
-List Commercial Properties.
+搜尋商業地產列表。包括店鋪、工業建築、倉庫等。
 
-**端点**: `GET /listcommercialproperties`
-
-
-**参数**:
-
-- `order` (string) *必需*: Example value: 
-
-- `operation` (string) *必需*: Example value: 
-
-- `locationId` (string) *必需*: Example value: 0-EU-ES-28-07-001-079
-
-- `maxItems` (string) *必需*: Example value: 
-
-- `locationName` (string) *必需*: Example value: Madrid
-
-- `numPage` (string) *必需*: Example value: 1
-
-- `location` (string) *必需*: Example value: 
-
-- `locale` (string) *必需*: Example value: 
-
-- `minPrice` (string): Example value: 
-
-- `maxPrice` (string): Example value: 
-
-- `minSize` (string): Example value: 
-
-- `maxSize` (string): Example value: 
-
-- `premises` (string): Example value: 
-
-- `industrialBuilding` (string): Example value: 
-
-- `saleWarehouseOnly` (string): Example value: 
-
-- `saleWarehouseWithBusinessTransfer` (string): Example value: 
-
-- `saleWarehouseThirdPartiesRented` (string): Example value: 
-
-- `accommodation` (string): Example value: 
-
-- `barsAndNightclub` (string): Example value: 
-
-- `catering` (string): Example value: 
-
-- `foodTrade` (string): Example value: 
-
-- `tobaccoShop` (string): Example value: 
-
-- `pharmacy` (string): Example value: 
-
-- `newsstand` (string): Example value: 
-
-- `retail` (string): Example value: 
-
-- `educationalCenter` (string): Example value: 
-
-- `aestheticAndBeauty` (string): Example value: 
-
-- `sportsFacilities` (string): Example value: 
-
-- `professionalServices` (string): Example value: 
-
-- `laboratory` (string): Example value: 
-
-- `storehouse` (string): Example value: 
-
-- `otherCommercialActivities` (string): Example value: 
-
-- `shoppingcenter` (string): Example value: 
-
-- `street` (string): Example value: 
-
-- `mezzanine` (string): Example value: 
-
-- `underground` (string): Example value: 
-
-- `ontopfloor` (string): Example value: 
-
-- `otherLocations` (string): Example value: 
-
-- `sinceDate` (string): Publication Date Parameter. One of the following values. Indifferent: leave blank (by default) | Last 24h: T (Rent operation only) | Last 48h: Y (Buy operation only) | Last week: W | Last month: M
-
-
+**端點**: `GET /listcommercialproperties`
 
 ---
 
 
 ### `list_offices`
 
-List office properties with the requested parameters. Buy/Rent \u003e Offices. Filters are optional parameters, please make sure the request follows the rules in each parameter.
+搜尋辦公室列表。
 
-**端点**: `GET /listoffices`
-
-
-**参数**:
-
-- `order` (string) *必需*: Example value: 
-
-- `operation` (string) *必需*: Search sales or rentals. Pick between: sale|rent
-
-- `locationId` (string) *必需*: Example value: 0-EU-ES-28-07-001-079
-
-- `maxItems` (string) *必需*: Example value: 
-
-- `locationName` (string) *必需*: Example value: Madrid
-
-- `numPage` (string) *必需*: Example value: 1
-
-- `location` (string) *必需*: Example value: 
-
-- `locale` (string) *必需*: Example value: 
-
-- `minPrice` (string): Example value: 
-
-- `maxPrice` (string): Example value: 
-
-- `minSize` (string): Example value: 
-
-- `maxSize` (string): Example value: 
-
-- `layout` (string): Distribution parameter. Pick between: Indifferent: leave blank (default) Open plan: openPlan Divided by walls: withWalls
-
-- `buildingType` (string): Type of building parameter. Pick between: Indifferent: leave blank (default) Exclusively for offices: exclusive Mixted use: mixed
-
-- `hotWater` (string): Example value: 
-
-- `airConditioning` (string): Example value: 
-
-- `elevator` (string): Example value: 
-
-- `heating` (string): Example value: 
-
-- `accessible` (string): Example value: 
-
-- `exterior` (string): Example value: 
-
-- `garage` (string): Example value: 
-
-- `security` (string): Example value: 
-
-- `hasPlan` (string): Example value: 
-
-- `bankOffer` (string): Bank-owned
-
-- `sinceDate` (string): Publication Date Parameter. One of the following values. Indifferent: leave blank (by default) | Last 24h: T (Rent operation only) | Last 48h: Y (Buy operation only) | Last week: W | Last month: M
-
-
+**端點**: `GET /listoffices`
 
 ---
 
 
 ### `list_rooms`
 
-List renting rooms with the requested parameters. Buy, Rent \u003e Rooms or Share \u003e Homes.
+搜尋出租房間列表。支援合租相關篩選。
 
-**端点**: `GET /listrooms`
-
-
-**参数**:
-
-- `order` (string) *必需*: Order by one of the followings: relevance|lowestprice|highestprice|mostrecent|leastrecent|highestpricereduction|lowestpricem2|highestpricem2|biggest|smallest|highestfloors|lowestfloors Default is relevance.
-
-- `locationId` (string) *必需*: Example value: 0-EU-ES-28-07-001-079
-
-- `locationName` (string) *必需*: Example value: Madrid
-
-- `numPage` (string) *必需*: Example value: 1
-
-- `maxItems` (string) *必需*: Example value: 
-
-- `location` (string) *必需*: Example value: 
-
-- `locale` (string) *必需*: Example value: 
-
-- `minPrice` (string): Example value: 
-
-- `maxPrice` (string): Example value: 
-
-- `newGender` (string): 'You are' parameter (your gender). Pick between: male|female
-
-- `smokingPolicy` (string): Pick between: Indiferent: leave blank (default) | Smoking allowed: allowed | Smoking is not allowed: disallowed
-
-- `petsPolicy` (string): Pets. Pick between: Indifferent: leave blank (default) Pets allowed: allowed Pets not allowed: disallowed
-
-- `availableFrom` (string): Date the room is available. Pick between: Any date: leave blank (default) Available now: now +1 month since now: 1m +2 months since now: 2m +3 months since now: 3m +4 months since now: 4m +5 months since now: 5m
-
-- `housemates1` (string): Example value: 
-
-- `housemates2` (string): Example value: 
-
-- `housemates3` (string): Example value: 
-
-- `couplesAllowed` (string): Example value: 
-
-- `childrenAllowed` (string): Example value: 
-
-- `streetViewWindow` (string): Example value: 
-
-- `privateToilet` (string): Example value: 
-
-- `airConditioning` (string): Example value: 
-
-- `elevator` (string): Example value: 
-
-- `terrace` (string): Example value: 
-
-- `exterior` (string): Example value: 
-
-- `accessible` (string): Example value: 
-
-- `hasHouseKeeper` (string): Example value: 
-
-- `garden` (string): Example value: 
-
-- `swimmingPool` (string): Example value: 
-
-- `topFloor` (string): Example value: 
-
-- `intermediateFloor` (string): Example value: 
-
-- `groundFloor` (string): Example value: 
-
-- `occupation` (string): Flat sharing with... Pick one of these: Indifferent: leave blank (default) With workers: workers With students: students
-
-- `gayPartners` (string): Example value: 
-
-- `ownerNotLiving` (string): Example value: 
-
-- `privateOwner` (string): Example value: 
-
-- `sinceDate` (string): Publication Date Parameter. One of the following values. Indifferent: leave blank (by default) | Last 48h: Y (Buy operation only) | Last week: W | Last month: M
-
-
+**端點**: `GET /listrooms`
 
 ---
 
 
 ### `list_new_homes`
 
-List new home properties with the requested parameters. Buy/Rent \u003e New home. Filters are optional parameters, please make sure the request follows the rules in each parameter.
+搜尋新房列表。
 
-**端点**: `GET /listnewhomes`
-
-
-**参数**:
-
-- `order` (string) *必需*: Order by one of the followings: relevance|lowestprice|highestprice|mostrecent|leastrecent|highestpricereduction|lowestpricem2|highestpricem2|biggest|smallest|highestfloors|lowestfloors Default is relevance.
-
-- `operation` (string) *必需*: Search sales or rentals. Pick between: sale|rent
-
-- `locationId` (string) *必需*: Example value: 0-EU-ES-28-07-001-079
-
-- `maxItems` (string) *必需*: Example value: 40
-
-- `locationName` (string) *必需*: Example value: Madrid
-
-- `numPage` (string) *必需*: Example value: 1
-
-- `location` (string) *必需*: Example value: 
-
-- `locale` (string) *必需*: Example value: 
-
-- `minPrice` (string): Example value: 
-
-- `maxPrice` (string): Example value: 
-
-- `housesOrChalets` (string): Example value: 
-
-- `flats` (string): Example value: 
-
-- `bedrooms0` (string): Example value: 
-
-- `bedrooms1` (string): Example value: 
-
-- `bedrooms2` (string): Example value: 
-
-- `bedrooms3` (string): Example value: 
-
-- `bedrooms4` (string): Example value: 
-
-- `rentToOwn` (string): Example value: 
-
-- `finished` (string): Example value: 
-
-- `stateSubsidized` (string): Example value: 
-
-- `bankOffer` (string): Example value: 
-
-
+**端點**: `GET /listnewhomes`
 
 ---
 
 
 ### `get_suggestions`
 
-Get location suggestions (autocomplete)
+取得位置搜尋建議（自動補全）。
 
-**端点**: `GET /getsuggestions`
-
-
-**参数**:
-
-- `prefix` (string) *必需*: Example value: madrid
-
-- `location` (string) *必需*: One of the following values: es|pt|it
-
-- `propertyType` (string) *必需*: Changes the 'total' field which indicates the number of properties of this type. Note: bedrooms only works with rent operation.
-
-- `operation` (string) *必需*: Changes the 'total' field which indicates the number of properties with this operation.
-
-
+**端點**: `GET /getsuggestions`
 
 ---
 
 
 
-## 技术栈
+## 支援的國家/地區
 
-- **FastMCP**: 快速、Pythonic 的 MCP 服务器框架
-- **传输协议**: stdio
-- **HTTP 客户端**: httpx
+- 🇪🇸 西班牙 (es)
+- 🇵🇹 葡萄牙 (pt)
+- 🇮🇹 義大利 (it)
 
-## 开发
 
-此伺服器由 [API-to-MCP](https://github.com/BACH-AI-Tools/api-to-mcp) 工具自動生成。
+## 技術棧
 
-版本: 1.0.0
+- **傳輸協定**: stdio
+- **HTTP 客戶端**: httpx
+
+## 授權
+
+MIT License - 詳見 [LICENSE](./LICENSE) 檔案。
+
+## 開發
+
+此伺服器由 [API-to-MCP](https://github.com/BACH-AI-Tools/api-to-mcp) 工具生成。
+
+版本: 2.0.0
